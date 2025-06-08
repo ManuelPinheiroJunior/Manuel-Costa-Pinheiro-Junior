@@ -1,0 +1,46 @@
+version: '3'
+services:
+  app:
+    build:
+      args:
+        user: laravel
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: pedidos-alphacode
+    container_name: pedidos-alphacode-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - pedidos-alphacode
+
+  db:
+    image: postgres:15
+    container_name: pedidos-alphacode-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./docker-compose/postgres:/var/lib/postgresql/data
+    networks:
+      - pedidos-alphacode
+
+  nginx:
+    image: nginx:alpine
+    container_name: pedidos-alphacode-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - pedidos-alphacode
+
+networks:
+  pedidos-alphacode:
+    driver: bridge 
